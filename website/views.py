@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
-from .form import SignUpForm
+from .form import SignUpForm,AddRecordForm
 from .models import Record
 
 # Create your views here.
@@ -53,3 +53,43 @@ def customer_record(request,pk):
     else:
         messages.success(request,"you must log in to view this...")
         return redirect('home')
+    
+def delete_record(request,pk):
+    if request.user.is_authenticated:
+        delete_it = Record.objects.get(id=pk)
+        delete_it.delete()
+        messages.success(request,"record sucessfully deleted..")
+        return redirect('home')
+    else:
+        messages.success(request,"you must login to do it..")
+        return redirect('home')
+        
+def add_record(request):
+    form = AddRecordForm(request.POST or None)
+    if request.user.is_authenticated:
+        if request.method=='POST':
+            if form.is_valid():
+                add_record=form.save()
+                messages.success(request,"record added...")
+                return redirect('home')
+        else:
+            return render(request,'add_record.html',{'form':form}) 
+    else:
+         messages.success(request,"you have to login")
+         return redirect('home')
+def update_record(request,pk):
+    if request.user.is_authenticated:
+        current_record = Record.objects.get(id=pk)
+        form = AddRecordForm(request.POST or None, instance=current_record)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "record updated..")
+            return redirect("home")
+        else:
+            return render(request,"update_record.html", {'form':form})
+    else:
+        messages.success(request,"you must login")
+        return redirect('home')    
+        
+        
+        
